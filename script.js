@@ -228,6 +228,7 @@ function emitBrief(data, labelStr) {
   document.getElementById('sdot').className = 'sdot ready';
   document.getElementById('stxt').textContent = 'Brief siap';
   toast('✦ Brief berhasil dibuat!', 'ok');
+  if (window.fbHistory) window.fbHistory.save(data, labelStr);
 }
 
 // ── FEED ──────────────────────────────────────────────────────────────────
@@ -908,4 +909,84 @@ document.addEventListener('DOMContentLoaded', () => {
   updateGridPreview();
   initG9Tiles();
   initSlides();
+});
+
+// ── Riwayat (Firestore) ──────────────────────────────────────────────────
+let histCache = [];
+
+function openHistory() {
+  document.getElementById('hist_ov').classList.add('open');
+  const body = document.getElementById('hist_body');
+  body.innerHTML = '<div class="hist-empty">Memuat riwayat...</div>';
+  if (!window.fbHistory) {
+    body.innerHTML = '<div class="hist-empty">Riwayat belum siap, coba lagi sebentar.</div>';
+    return;
+  }
+  window.fbHistory.subscribe((items) => {
+    histCache = items;
+    renderHistoryList(items);
+  });
+}
+
+function closeHistory() {
+  document.getElementById('hist_ov').classList.remove('open');
+}
+
+function handleHistOvClick(e) {
+  if (e.target === document.getElementById('hist_ov')) closeHistory();
+}
+
+function fmtHistDate(ts) {
+  try {
+    const d = ts && ts.toDate ? ts.toDate() : (ts ? new Date(ts) : null);
+    if (!d) return '';
+    return d.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+
+function renderHistoryList(items) {
+  const body = document.getElementById('hist_body');
+  if (!items || items.length === 0) {
+    body.innerHTML = '<div class="hist-empty">Belum ada riwayat. Generate brief pertamamu dulu!</div>';
+    return;
+  }
+  body.innerHTML = items.map(it => {
+    const brand = it.data && (
+      (it.data.prompt_structure && it.data.prompt_structure.branding_elements && it.data.prompt_structure.branding_elements.brand_name) ||
+      it.data.brand || it.data.product_name || it.data.task_type || ''
+    );
+    return `
+      <div class="hist-item">
+        <div class="hist-item-main">
+          <div class="hist-item-label">${escHtml(it.label || 'brief')}${brand ? ' · ' + escHtml(String(brand)) : ''}</div>
+          <div class="hist-item-meta">${escHtml(fmtHistDate(it.createdAt))}</div>
+        </div>
+        <div class="hist-item-actions">
+          <button class="hist-btn" onclick="loadHistoryEntry('${it.id}')">Muat</button>
+          <button class="hist-btn danger" onclick="deleteHistoryEntry('${it.id}')">Hapus</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function loadHistoryEntry(id) {
+  const entry = histCache.find(it => it.id === id);
+  if (!entry) { toast('Riwayat tidak ditemukan', 'err'); return; }
+  cJSON = entry.data;
+  renderOutput(entry.data, entry.label);
+  closeHistory();
+  document.getElementById('sdot').className = 'sdot ready';
+  document.getElementById('stxt').textContent = 'Brief siap';
+  toast('✦ Riwayat dimuat!', 'ok');
+}
+
+function deleteHistoryEntry(id) {
+  if (!window.fbHistory) return;
+  window.fbHistory.remove(id);
+  toast('Riwayat dihapus', 'ok');
+}
+
+window.addEventListener('fbhistory:logout', () => {
+  histCache = [];
+  closeHistory();
 });

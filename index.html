@@ -10,10 +10,34 @@
 </head>
 <body>
 
+<!-- ── AUTH GATE ─────────────────────────────────────────────────────── -->
+<div id="auth-gate" class="auth-gate">
+  <div class="auth-card">
+    <div class="logo" style="justify-content:center;margin-bottom:6px"><div class="logo-dot"></div>Ads<span>Brief</span> Studio</div>
+    <p class="auth-sub">Masuk dengan email yang kamu pakai saat beli di Lynk.id</p>
+
+    <form id="auth-login-form" class="auth-form">
+      <input type="email" id="auth-email" class="auth-input" placeholder="Email kamu" autocomplete="email" required>
+      <input type="password" id="auth-password" class="auth-input" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" class="auth-btn" id="auth-login-btn">Masuk</button>
+    </form>
+
+    <div id="auth-error" class="auth-error" style="display:none"></div>
+    <div id="auth-info" class="auth-info" style="display:none"></div>
+
+    <button type="button" id="auth-forgot-btn" class="auth-link">Belum pernah set password / lupa password?</button>
+  </div>
+</div>
+
+<div id="app-content" style="display:none">
+
 <nav class="topbar">
   <div class="logo"><div class="logo-dot"></div>Ads<span>Brief</span> Studio</div>
   <div style="display:flex;align-items:center;gap:8px">
     <span class="badge">Beta</span>
+    <button type="button" id="hist-open-btn" class="hist-open-btn" onclick="openHistory()">🕘 Riwayat</button>
+    <span id="auth-user-email" class="auth-user-email"></span>
+    <button type="button" id="auth-logout-btn" class="auth-logout-btn">Keluar</button>
   </div>
 </nav>
 
@@ -592,6 +616,25 @@
   </div><!-- /content-area -->
 </div><!-- /app-shell -->
 
+<!-- HISTORY MODAL -->
+<div class="modal-ov" id="hist_ov" onclick="handleHistOvClick(event)">
+  <div class="modal hist-modal">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="modal-check">🕘</div>
+        <div>
+          <div class="modal-t">Riwayat Brief</div>
+          <div class="modal-sub"><span class="modal-sub-dot"></span>TERSIMPAN OTOMATIS SETIAP GENERATE</div>
+        </div>
+      </div>
+      <button class="modal-x" onclick="closeHistory()">✕</button>
+    </div>
+    <div class="hist-body" id="hist_body">
+      <div class="hist-empty">Memuat riwayat...</div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-ov" id="modal_ov" onclick="handleOvClick(event)">
   <div class="modal">
@@ -650,6 +693,9 @@
 
 <div class="toast-wrap" id="tw"></div>
 
+</div> <!-- /#app-content -->
+
+<script type="module" src="auth.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
